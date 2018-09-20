@@ -1,7 +1,8 @@
 PANA AICI... dupa ce termini alea usoare fa astea:
 
-
-11. Updateaza AddOre function
-12. Updatez algorithmul de world generation sa faca si structuri subterane ca cele din terraria sau minecraft poate
-13. Adauga inventar
-14. Adaug sprituri
+12.A Sansa sa ia valori de float;
+12.B Baga argumente sa ia minLvl si maxLvl ca sa ia decat intre acel nivel sa ia std::vector<Block> stoneVector;
+12.C Este un bug pe care trebuie sa-l vezi cand dai run la lumi mari ca 128/64 sau 256/128;
+13. Adaug sprituri
+14. Adauga inventar
+15. Updatez algorithmul de world generation sa faca si structuri subterane ca cele din terraria sau minecraft poate

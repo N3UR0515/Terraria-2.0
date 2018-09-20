@@ -28,6 +28,9 @@ void Grid::World::Block::SetType(BlockType _type)
 	type = _type;
 }
 
+
+
+//WORLD GENERATION
 Grid::World::World()
 {
 	std::mt19937 rng(std::random_device{}());
@@ -35,7 +38,6 @@ Grid::World::World()
 																 //But if it's a small number there are big chances that there
 																 //Might be similarities with previous or next maps
 																 //So with a big number, this chance gets smaller
-	std::uniform_int_distribution<int> dirtLayer(2, 4);
 
 	//Surface generation
 	float seed = seeding(rng); //Taking a random seed/xoffset in time;
@@ -66,6 +68,8 @@ Grid::World::World()
 			surfaceBlock = testForBlock;
 		}
 
+		std::uniform_int_distribution<int> dirtLayer(2, 4);
+
 		const int dLayer = dirtLayer(rng);
 
 		//Adding the underground blocks
@@ -84,10 +88,11 @@ Grid::World::World()
 		}
 	}
 
-	/*AddOres(Block::BlockType::Coal, blocks, 2.5000000f);
-	AddOres(Block::BlockType::Iron, blocks, 2.3333333f);
-	AddOres(Block::BlockType::Diamond, blocks, 0.05f);*/
-	AddOres(Block::BlockType::Coal, blocks, 1, 100, 10, 5);
+	//Ores
+	AddOres(Block::BlockType::Coal, blocks, 5, 30, 1, 3);
+	AddOres(Block::BlockType::Iron, blocks, 4, 20, 1, 2);
+	AddOres(Block::BlockType::Diamond, blocks, 1);
+	//Ores
 	//Underground filling
 
 	//Checking for errors
@@ -105,6 +110,9 @@ Grid::World::World()
 	}
 	//Checking for errors
 }
+//WORLD GENERATION
+
+
 
 void Grid::World::DrawBackground(Grid & grd)
 {
