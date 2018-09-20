@@ -15,7 +15,7 @@ void Grid::Grid::World::Block::Draw(Grid & grd)
 
 Vec2 Grid::Grid::World::Block::GetLocation()
 {
-	return loc;
+	return Vec2(int(loc.x), int(loc.y));
 }
 
 Grid::World::Block::BlockType Grid::World::Block::GetType()
@@ -90,8 +90,8 @@ Grid::World::World()
 
 	//Ores
 	AddOres(Block::BlockType::Coal, blocks, 5, 30, 1, 3);
-	AddOres(Block::BlockType::Iron, blocks, 4, 20, 1, 2);
-	AddOres(Block::BlockType::Diamond, blocks, 1);
+	/*AddOres(Block::BlockType::Iron, blocks, 4, 20, 1, 2);
+	AddOres(Block::BlockType::Diamond, blocks, 1);*/
 	//Ores
 	//Underground filling
 
