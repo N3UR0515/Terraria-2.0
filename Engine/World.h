@@ -102,9 +102,9 @@ public:
 
 	World world;
 public:
-	static constexpr int Width = 256; //64
-	static constexpr int Height = 128; //32
-	static constexpr int CellDimensions = 4; //16
+	static constexpr int Width = 128; //64
+	static constexpr int Height = 64; //32
+	static constexpr int CellDimensions = 8; //16
 	static constexpr int Spacing = 0; //2
 
 	Grid(Graphics& gfx);
