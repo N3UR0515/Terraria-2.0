@@ -81,7 +81,7 @@ public:
 	private:
 		//Functions
 		void AddOres(Block::BlockType type, std::vector<Block>& b, int chanceOfSpawningOnEachBlock);
-		void AddOres(Block::BlockType type, std::vector<Block>& b, char chanceOfSpawningOnEachBlock, char chanceOfCluster, char minChance, char chanceScalar);
+		void AddOres(Block::BlockType type, std::vector<Block>& b, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar);
 		void MobSpawning(Mob::MobType type, std::vector<Mob>& m, int propabillity);
 		//Functions
 	public:
@@ -102,9 +102,9 @@ public:
 
 	World world;
 public:
-	static constexpr int Width = 256; //64
-	static constexpr int Height = 128; //32
-	static constexpr int CellDimensions = 4; //16
+	static constexpr int Width = 128; //64
+	static constexpr int Height = 64; //32
+	static constexpr int CellDimensions = 8; //16
 	static constexpr int Spacing = 0; //2
 
 	Grid(Graphics& gfx);

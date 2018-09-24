@@ -15,7 +15,7 @@ void Grid::Grid::World::Block::Draw(Grid & grd)
 
 Vec2 Grid::Grid::World::Block::GetLocation()
 {
-	return Vec2(int(loc.x), int(loc.y));
+	return Vec2(float(int(loc.x)), float(int(loc.y)));
 }
 
 Grid::World::Block::BlockType Grid::World::Block::GetType()
@@ -89,9 +89,8 @@ Grid::World::World()
 	}
 
 	//Ores
-	AddOres(Block::BlockType::Coal, blocks, 5, 30, 1, 3);
-	/*AddOres(Block::BlockType::Iron, blocks, 4, 20, 1, 2);
-	AddOres(Block::BlockType::Diamond, blocks, 1);*/
+	AddOres(Block::BlockType::Coal, blocks, 1.3333333f, 80.0000000f, 2.0000000f, 1.5000000f);
+	AddOres(Block::BlockType::Iron, blocks, 1.3333333f, 60.0000000f, 1.0000000f, 3.0000000f);
 	//Ores
 	//Underground filling
 
@@ -317,19 +316,18 @@ void Grid::World::AddOres(Block::BlockType type, std::vector<Block>& b, int chan
 	}
 }
 
-void Grid::World::AddOres(Block::BlockType type, std::vector<Block>& b, char chanceOfSpawningCentre, char chanceOfCluster, char minChance, char chanceScalar)
+void Grid::World::AddOres(Block::BlockType type, std::vector<Block>& b, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar)
 {
 	std::mt19937 rng(std::random_device{}());
-	std::uniform_int_distribution<int> randomNumber(0, 100);
+	std::uniform_real_distribution<float> randomNumber(0.0000000f, 100.0000000f);
 
 	std::vector<Block> SpawnerOreCentre;
 	std::vector<Block> Branch;
 
-	//Create the ores
+	//Creating the SpawnerOreCentre
 	for (unsigned int i = 0; i < b.size(); i++)
 	{
-		if ((b.at(i).GetType() == Block::BlockType::Stone) &&
-			(randomNumber(rng) < chanceOfSpawningCentre))
+		if (randomNumber(rng) < chanceOfSpawningCentre && b.at(i).GetType() == Block::BlockType::Stone)
 		{
 			SpawnerOreCentre.push_back(b.at(i));
 			b.at(i).SetType(type);
@@ -337,63 +335,46 @@ void Grid::World::AddOres(Block::BlockType type, std::vector<Block>& b, char cha
 	}
 
 	//Creating the ore chunking
-	for (unsigned int i = 0; i < SpawnerOreCentre.size(); i++)
+	for (unsigned int oreCentreIterator = 0; oreCentreIterator < SpawnerOreCentre.size(); oreCentreIterator++)
 	{
-		char chanceOfChunk = chanceOfCluster;
+		float chanceOfChunk = chanceOfCluster;
 		
-		Branch.push_back(SpawnerOreCentre.at(i));
+		Branch.push_back(SpawnerOreCentre.at(oreCentreIterator));
 
-		for (unsigned int branchIterator = 0; branchIterator < Branch.size(); branchIterator++)
+		for (unsigned int branchIterator = 0; branchIterator < Branch.size() && chanceOfChunk > minChance; branchIterator++)
 		{
-			if (chanceOfChunk > minChance)
+			for (unsigned int blockTesting = 0; blockTesting < b.size(); blockTesting++)
 			{
-				for (unsigned int blockTesting = 0; blockTesting < b.size(); blockTesting++)
+				//TOP TESTING
+				if (b.at(blockTesting).GetLocation() == Branch.at(branchIterator).GetLocation() + Vec2(0, -1) && b.at(blockTesting).GetType() == Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
 				{
-					//TOP TESTING
-					if (b.at(blockTesting).GetLocation() == Branch.at(i).GetLocation() + Vec2(0, -1) && b.at(blockTesting).GetType() == Block::BlockType::Stone)
-					{
-						if (randomNumber(rng) < chanceOfChunk)
-						{
-							Branch.push_back(b.at(blockTesting));
-							b.at(blockTesting).SetType(type);
-						}
-					}
-					//RIGHT TESTING
-					if (b.at(blockTesting).GetLocation() == Branch.at(i).GetLocation() + Vec2(1, 0) && b.at(blockTesting).GetType() == Block::BlockType::Stone)
-					{
-						if (randomNumber(rng) < chanceOfChunk)
-						{
-							Branch.push_back(b.at(blockTesting));
-							b.at(blockTesting).SetType(type);
-						}
-					}
-					//BOTTOM TESTING
-					if (b.at(blockTesting).GetLocation() == Branch.at(i).GetLocation() + Vec2(0, 1) && b.at(blockTesting).GetType() == Block::BlockType::Stone)
-					{
-						if (randomNumber(rng) < chanceOfChunk)
-						{
-							Branch.push_back(b.at(blockTesting));
-							b.at(blockTesting).SetType(type);
-						}
-					}
-					//LEFT TESTING
-					if (b.at(blockTesting).GetLocation() == Branch.at(i).GetLocation() + Vec2(-1, 0) && b.at(blockTesting).GetType() == Block::BlockType::Stone)
-					{
-						if (randomNumber(rng) < chanceOfChunk)
-						{
-							Branch.push_back(b.at(blockTesting));
-							b.at(blockTesting).SetType(type);
-						}
-					}
+						Branch.push_back(b.at(blockTesting));
+						b.at(blockTesting).SetType(type);
 				}
-			}
-			else
-			{
-				break;
+				//RIGHT TESTING
+				if (b.at(blockTesting).GetLocation() == Branch.at(branchIterator).GetLocation() + Vec2(1, 0) && b.at(blockTesting).GetType() == Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
+				{
+					Branch.push_back(b.at(blockTesting));
+					b.at(blockTesting).SetType(type);
+				}
+				//BOTTOM TESTING
+				if (b.at(blockTesting).GetLocation() == Branch.at(branchIterator).GetLocation() + Vec2(0, 1) && b.at(blockTesting).GetType() == Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
+				{
+					Branch.push_back(b.at(blockTesting));
+					b.at(blockTesting).SetType(type);
+				}
+				//LEFT TESTING
+				if (b.at(blockTesting).GetLocation() == Branch.at(branchIterator).GetLocation() + Vec2(-1, 0) && b.at(blockTesting).GetType() == Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
+				{
+					Branch.push_back(b.at(blockTesting));
+					b.at(blockTesting).SetType(type);
+				}
 			}
 
 			chanceOfChunk /= chanceScalar;
 		}
+
+		Branch.clear();
 	}
 }
 
