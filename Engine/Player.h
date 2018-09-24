@@ -14,12 +14,10 @@ private:
 	void Jump(Keyboard& kbd, Vec2& dl, std::vector<Grid::World::Block>& b);
 	void MoveBy(const Vec2 delta_loc);
 	void BlockBreaking(Vec2& mousePos, std::vector<Grid::World::Block>& b);
-	void DrawInventoryTemplate(Graphics& gfx);
 public:
 	Player(const Vec2 in_loc);
 	void Draw(Grid& grd) const;
-	void Update(Graphics& gfx, Keyboard& kbd, Mouse& mouse, std::vector<Grid::World::Block>& b);
-	bool GetInventoryVariable();
+	void Update(Keyboard& kbd, Mouse& mouse, std::vector<Grid::World::Block>& b);
 private:
 	Vec2 loc;
 	Color c = Colors::Magenta;
@@ -28,6 +26,4 @@ private:
 	bool jumping = false;
 	int jumpForce = 3; //Number of blocks the player can jump
 	static constexpr _int8 playerBreakingReach = 3;
-	bool openInventory = false;
-	bool inhibitToOpenInventory = true;
 };
