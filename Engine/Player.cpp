@@ -26,7 +26,7 @@ void Player::PlayerWithBlocksCollision(Vec2& dl, std::vector<Grid::World::Block>
 	//Checking if there is a block on the player's right/left/down/up/diagonals and respond by changing the delta_loc
 	if ((dl.x != 0 && dl.y == 0) || (dl.x == 0 && dl.y != 0) || (dl.x != 0 && dl.y != 0))
 	{
-		for (int i = 0; i < b.size(); i++)
+		for (unsigned int i = 0; i < b.size(); i++)
 		{
 			if (b.at(i).GetLocation() == loc + dl)
 			{
@@ -57,7 +57,7 @@ void Player::Jump(Keyboard & kbd, Vec2 & dl, std::vector<Grid::World::Block>& b)
 		{
 			//Check if it can jump
 			Vec2 underBlock = { 0,1 };
-			for (int i = 0; i < b.size(); i++)
+			for (unsigned int i = 0; i < b.size(); i++)
 			{
 				if (b.at(i).GetLocation() == loc + underBlock)
 				{
@@ -80,7 +80,7 @@ void Player::Jump(Keyboard & kbd, Vec2 & dl, std::vector<Grid::World::Block>& b)
 		dl += {0, 1};
 
 		Vec2 underBlock = { 0,1 };
-		for (int i = 0; i < b.size(); i++)
+		for (unsigned int i = 0; i < b.size(); i++)
 		{
 			if (b.at(i).GetLocation() == loc + underBlock)
 			{
@@ -107,8 +107,8 @@ void Player::BlockBreaking(Vec2& mousePos, std::vector<Grid::World::Block>& b)
 {
 	Vec2 gridPos = mousePos / Grid::CellDimensions;
 
-	gridPos.x = int(gridPos.x);
-	gridPos.y = int(gridPos.y);
+	gridPos.x = float(int(gridPos.x));
+	gridPos.y = float(int(gridPos.y));
 
 	assert(gridPos.x >= 0 && gridPos.x < Grid::Width && gridPos.y >= 0 && gridPos.y < Grid::Height);
 	
@@ -119,7 +119,7 @@ void Player::BlockBreaking(Vec2& mousePos, std::vector<Grid::World::Block>& b)
 	}
 	else
 	{
-		for (int i = 0; i < b.size(); i++)
+		for (unsigned int i = 0; i < b.size(); i++)
 		{
 			if (b.at(i).GetLocation() == gridPos)
 			{
