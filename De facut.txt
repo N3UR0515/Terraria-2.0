@@ -1,5 +1,6 @@
 PANA AICI... dupa ce termini alea usoare fa astea:
 
-13. Adaug sprituri
-14. Adauga inventar
-15. Updatez algorithmul de world generation sa faca si structuri subterane ca cele din terraria sau minecraft poate
+13.FA CEVA GEN, GRID[y * width + x] care contine toate bucatile din grid si asa fac mai usor collision detection
+14. Adaug sprituri
+15. Adauga inventar
+16. Updatez algorithmul de world generation sa faca si structuri subterane ca cele din terraria sau minecraft poate

@@ -90,7 +90,8 @@ Grid::World::World()
 
 	//Ores
 	AddOres(Block::BlockType::Coal, blocks, 1.3333333f, 80.0000000f, 2.0000000f, 1.5000000f);
-	AddOres(Block::BlockType::Iron, blocks, 1.3333333f, 60.0000000f, 1.0000000f, 3.0000000f);
+	AddOres(Block::BlockType::Iron, blocks, 1.3333333f, 90.0000000f, 1.0000000f, 3.0000000f);
+	AddOres(Block::BlockType::Diamond, blocks, 0.0100000f);
 	//Ores
 	//Underground filling
 
@@ -300,10 +301,10 @@ void Grid::World::Update(float dt)
 	}
 }
 
-void Grid::World::AddOres(Block::BlockType type, std::vector<Block>& b, int chanceOfSpawningOnEachBlock)
+void Grid::World::AddOres(Block::BlockType type, std::vector<Block>& b, float chanceOfSpawningOnEachBlock)
 {
 	std::mt19937 rng(std::random_device{}());
-	std::uniform_int_distribution<int> randomNumber(0, 100);
+	std::uniform_real_distribution<float> randomNumber(0.0000000f, 100.0000000f);
 
 	//Create the ores
 	for (unsigned int i = 0; i < b.size(); i++)
