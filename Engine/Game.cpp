@@ -25,8 +25,7 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
 	gfx( wnd ),
-	grd(gfx),
-	player(Vec2{Grid::Width /2 - 1, 0})
+	grd(gfx)
 {
 }
 
@@ -47,22 +46,20 @@ void Game::UpdateModel()
 	//World
 
 	//Player
-	player.Update(wnd.kbd, wnd.mouse, grd.world.blocks);
+	//grd.player.Update(wnd.kbd, wnd.mouse, grd.world.blocks);
 	//Player
 }
 
 void Game::ComposeFrame()
 {
 	//World
-	grd.world.DrawBackground(grd);
-
-	for (unsigned _int16 i = 0; i < grd.world.blocks.size(); i++)
+	for (unsigned int i = 0; i < Grid::Width * Grid::Height; i++)
 	{
-		grd.world.blocks.at(i).Draw(grd);
+		grd.world.blocksInGrid[i].Draw(grd);
 	}
 	//World
 
 	//Player
-	player.Draw(grd);
+	//player.Draw(grd);
 	//Player
 }

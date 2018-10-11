@@ -147,7 +147,6 @@
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Noise.h" />
-    <ClInclude Include="Player.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Vec2.h" />
     <ClInclude Include="World.h" />
@@ -161,7 +160,6 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="Mouse.cpp" />
-    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Vec2.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>

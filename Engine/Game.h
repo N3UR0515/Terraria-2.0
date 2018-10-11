@@ -23,7 +23,6 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Graphics.h"
-#include "Player.h"
 #include "World.h"
 #include "FrameTimer.h"
 
@@ -47,7 +46,5 @@ private:
 	/*  User Variables              */
 	Grid grd;
 	FrameTimer ft;
-
-	Player player;
 	/********************************/
 };

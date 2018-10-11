@@ -28,11 +28,29 @@ void Grid::World::Block::SetType(BlockType _type)
 	type = _type;
 }
 
+void Grid::World::Block::SetLocation(Vec2 v)
+{
+	loc = v;
+}
+
 
 
 //WORLD GENERATION
 Grid::World::World()
 {
+	//Organizing the array
+	{
+		int id = 0;
+		for (int i = 0; i < Grid::Width; i++)
+		{
+			for (int j = 0; j < Grid::Height; j++, id++)
+			{
+				blocksInGrid[id].SetType(World::Block::BlockType::Air);
+				blocksInGrid[id].SetLocation(Vec2(float(i), float(j)));
+			}
+		}
+	}
+
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> seeding(0, 100000.0f); //You can change 100000 with any number you want
 																 //But if it's a small number there are big chances that there
@@ -51,19 +69,17 @@ Grid::World::World()
 		j += float(Grid::Height / 2 - 1);				//The perlin values are between 0 and double the amplitude
 															//So I just translate it to the middle of the y plane
 
-		Block terrainSurface = Block(Vec2(float(i), float(int(j))), Block::BlockType::Grass);
-
-		blocks.push_back(terrainSurface);
+		blocksInGrid[GetId(i, int(j + 0.5f))].SetType(Block::BlockType::Grass);
 	}
 	//Surface generation
 
-	//Underground filling
+	////Underground filling
 	for (int i = 0; i < Grid::Width; i++)
 	{
 		int surfaceBlock = 0;
 
 		//Finding the surfaceBlock's y location
-		for (int testForBlock = 0; testForBlock < blocks.at(i).GetLocation().y + 2; testForBlock++)
+		for (int testForBlock = 0; blocksInGrid[i, testForBlock - 2].GetType() != World::Block::BlockType::Grass; testForBlock++)
 		{
 			surfaceBlock = testForBlock;
 		}
@@ -77,53 +93,24 @@ Grid::World::World()
 		{
 			if (j <= surfaceBlock + dLayer)
 			{
-				Block underGroundBlock = Block(Vec2(float(i), float(j)), Grid::World::Block::BlockType::Dirt);
-				blocks.push_back(underGroundBlock);
+				blocksInGrid[GetId(i, j)].SetType(Grid::World::Block::BlockType::Dirt);
 			}
 			else
 			{
-				Block underGroundBlock = Block(Vec2(float(i), float(j)), Grid::World::Block::BlockType::Stone);
-				blocks.push_back(underGroundBlock);
+				blocksInGrid[GetId(i, j)].SetType(Grid::World::Block::BlockType::Stone);
 			}
 		}
 	}
 
-	//Ores
-	AddOres(Block::BlockType::Coal, blocks, 1.3333333f, 80.0000000f, 2.0000000f, 1.5000000f);
-	AddOres(Block::BlockType::Iron, blocks, 1.3333333f, 90.0000000f, 1.0000000f, 3.0000000f);
-	AddOres(Block::BlockType::Diamond, blocks, 0.0100000f);
-	//Ores
-	//Underground filling
-
-	//Checking for errors
-	for (unsigned int i = 0; i < blocks.size(); i++)
-	{
-		for (unsigned int I = 0; I < blocks.size(); I++)
-		{
-			if (i != I)
-			{
-				Vec2 block1Loc = blocks.at(i).GetLocation();
-				Vec2 block2Loc = blocks.at(I).GetLocation();
-				assert(!(block1Loc == block2Loc));
-			}
-		}
-	}
-	//Checking for errors
+	////Ores
+	//AddOres(Block::BlockType::Coal, blocks, 1.3333333f, 80.0000000f, 2.0000000f, 1.5000000f);
+	//AddOres(Block::BlockType::Iron, blocks, 1.3333333f, 90.0000000f, 1.0000000f, 3.0000000f);
+	//AddOres(Block::BlockType::Diamond, blocks, 0.0100000f);
+	////Ores
+	////Underground filling
 }
 //WORLD GENERATION
 
-
-
-void Grid::World::DrawBackground(Grid & grd)
-{
-	for (int i = 0; i < Grid::Width; i++)
-	{
-		for (int j = 0; j < Grid::Height; j++)
-		{
-			grd.DrawCell({float(i), float(j)}, skyColor);
-		}
-	}
-}
 
 void Grid::World::Update(float dt)
 {
@@ -402,6 +389,11 @@ void Grid::DrawCell(Vec2 loc, World::Block::BlockType type)
 
 	switch (type)
 	{
+	case Grid::World::Block::BlockType::Air:
+	{
+		blockColor = world.skyColor;
+		break;
+	}
 	case Grid::World::Block::BlockType::Grass:
 	{
 		blockColor = { 124, 181, 0 };
@@ -506,5 +498,175 @@ void Grid::World::MobSpawning(Mob::MobType type, std::vector<Mob>& m, int propab
 	{
 		World::Mob mob = World::Mob(type, Vec2(10.0f, 0.0f));
 		m.push_back(mob);
+	}
+}
+
+int Grid::World::GetId(int _x, int _y)
+{
+	return _x * Grid::Height + _y;
+}
+
+void Grid::World::Player::ClampToScreen()
+{
+	if (loc.x >= Grid::Width)
+	{
+		loc.x = Grid::Width - 1;
+	}
+	if (loc.x < 0)
+	{
+		loc.x = 0;
+	}
+	if (loc.y >= Grid::Height)
+	{
+		loc.y = Grid::Height - 1;
+	}
+	if (loc.y < 0)
+	{
+		loc.y = 0;
+	}
+}
+
+void Grid::World::Player::PlayerWithBlocksCollision(Vec2& dl, std::vector<Grid::World::Block>& b)
+{
+	//Checking if there is a block on the player's right/left/down/up/diagonals and respond by changing the delta_loc
+	if ((dl.x != 0 && dl.y == 0) || (dl.x == 0 && dl.y != 0) || (dl.x != 0 && dl.y != 0))
+	{
+		for (unsigned int i = 0; i < b.size(); i++)
+		{
+			if (b.at(i).GetLocation() == loc + dl)
+			{
+				dl = { 0,0 };
+			}
+		}
+	}
+}
+
+void Grid::World::Player::Jump(Keyboard & kbd, Vec2 & dl, std::vector<Grid::World::Block>& b)
+{
+	//Jumping Algorithm
+	if (kbd.KeyIsPressed(VK_UP))
+	{
+		if (jumping)
+		{
+			if (jumpForce != 0)
+			{
+				dl += {0, -1};
+				jumpForce--;
+			}
+			else
+			{
+				jumping = false;
+			}
+		}
+		else
+		{
+			//Check if it can jump
+			Vec2 underBlock = { 0,1 };
+			for (unsigned int i = 0; i < b.size(); i++)
+			{
+				if (b.at(i).GetLocation() == loc + underBlock)
+				{
+					jumping = true;
+					jumpForce = 3; //If you change the jumpForce then you must change this too!
+					break;
+				}
+			}
+		}
+	}
+	else if (jumping)
+	{
+		jumping = false;
+	}
+	//Jumping Algorithm
+
+	//Gravity
+	if (!jumping)
+	{
+		dl += {0, 1};
+
+		Vec2 underBlock = { 0,1 };
+		for (unsigned int i = 0; i < b.size(); i++)
+		{
+			if (b.at(i).GetLocation() == loc + underBlock)
+			{
+				dl += {0, -1}; //Reset dl;
+				jumping = false;
+				jumpForce = 0;
+			}
+		}
+	}
+	//Gravity
+}
+
+Grid::World::Player::Player(const Vec2 in_loc)
+{
+	loc = in_loc;
+}
+
+void Grid::World::Player::MoveBy(const Vec2 delta_loc)
+{
+	loc += delta_loc;
+}
+
+void Grid::World::Player::BlockBreaking(Vec2& mousePos, std::vector<Grid::World::Block>& b)
+{
+	Vec2 gridPos = mousePos / Grid::CellDimensions;
+
+	gridPos.x = float(int(gridPos.x));
+	gridPos.y = float(int(gridPos.y));
+
+	assert(gridPos.x >= 0 && gridPos.x < Grid::Width && gridPos.y >= 0 && gridPos.y < Grid::Height);
+
+	Vec2 distanceBetweenMouseBreakingAndPlayer = gridPos - loc;
+
+	if (distanceBetweenMouseBreakingAndPlayer.GetLength() > float(playerBreakingReach))
+	{
+	}
+	else
+	{
+		for (unsigned int i = 0; i < b.size(); i++)
+		{
+			if (b.at(i).GetLocation() == gridPos)
+			{
+				b.erase(b.begin() + i);
+			}
+		}
+	}
+}
+
+void Grid::World::Player::Draw(Grid & grd) const
+{
+	grd.DrawCell(loc, c);
+}
+
+void Grid::World::Player::Update(Keyboard& kbd, Mouse& mouse, std::vector<Grid::World::Block>& b)
+{
+	Vec2 delta_loc = { 0,0 };
+
+	//Horizontal movement
+	if (kbd.KeyIsPressed(VK_RIGHT))
+	{
+		delta_loc += { 1, 0 };
+	}
+	if (kbd.KeyIsPressed(VK_LEFT))
+	{
+		delta_loc += { -1, 0 };
+	}
+	//Horizontal movement
+
+	//Block Breaking
+	if (mouse.LeftIsPressed())
+	{
+		BlockBreaking(Vec2(float(mouse.GetPosX()), float(mouse.GetPosY())), b);
+	}
+
+	if (moveCounter++ == movePeriod)
+	{
+		moveCounter = 0; //Reset moveCounter
+
+		Jump(kbd, delta_loc, b);
+		PlayerWithBlocksCollision(delta_loc, b);
+		MoveBy(delta_loc);
+		ClampToScreen();
 	}
 }
