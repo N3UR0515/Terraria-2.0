@@ -111,10 +111,11 @@ public:
 		//Functions
 	private:
 		//Functions
-		void AddOres(Block::BlockType type, std::vector<Block>& b, float chanceOfSpawningOnEachBlock);
-		void AddOres(Block::BlockType type, std::vector<Block>& b, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar);
+		void AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningOnEachBlock);
+		void AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar);
 		void MobSpawning(Mob::MobType type, std::vector<Mob>& m, int propabillity);
 		int GetId(int _x, int _y);
+		int GetId(Vec2& v);
 		//Functions
 	public:
 		//Data

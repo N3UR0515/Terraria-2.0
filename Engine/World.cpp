@@ -76,12 +76,12 @@ Grid::World::World()
 	////Underground filling
 	for (int i = 0; i < Grid::Width; i++)
 	{
-		int surfaceBlock = 0;
+		int firstDirtBlock = 0;
 
 		//Finding the surfaceBlock's y location
-		for (int testForBlock = 0; blocksInGrid[i, testForBlock - 2].GetType() != World::Block::BlockType::Grass; testForBlock++)
+		for (int testForBlock = 0; blocksInGrid[GetId(i, testForBlock - 2)].GetType() != World::Block::BlockType::Grass; testForBlock++)
 		{
-			surfaceBlock = testForBlock;
+			firstDirtBlock = testForBlock;
 		}
 
 		std::uniform_int_distribution<int> dirtLayer(2, 4);
@@ -89,9 +89,9 @@ Grid::World::World()
 		const int dLayer = dirtLayer(rng);
 
 		//Adding the underground blocks
-		for (int j = surfaceBlock; j < Grid::Height; j++)
+		for (int j = firstDirtBlock; j < Grid::Height; j++)
 		{
-			if (j <= surfaceBlock + dLayer)
+			if (j <= firstDirtBlock + dLayer)
 			{
 				blocksInGrid[GetId(i, j)].SetType(Grid::World::Block::BlockType::Dirt);
 			}
@@ -102,12 +102,13 @@ Grid::World::World()
 		}
 	}
 
-	////Ores
-	//AddOres(Block::BlockType::Coal, blocks, 1.3333333f, 80.0000000f, 2.0000000f, 1.5000000f);
-	//AddOres(Block::BlockType::Iron, blocks, 1.3333333f, 90.0000000f, 1.0000000f, 3.0000000f);
-	//AddOres(Block::BlockType::Diamond, blocks, 0.0100000f);
-	////Ores
-	////Underground filling
+	//Ores
+	AddOres(Block::BlockType::Coal, blocksInGrid, 1.3333333f, 80.0000000f, 2.0000000f, 1.1000000f);
+	/*AddOres(Block::BlockType::Coal, blocksInGrid, 1.3333333f, 80.0000000f, 2.0000000f, 1.5000000f);*/
+	/*AddOres(Block::BlockType::Iron, blocksInGrid, 1.3333333f, 90.0000000f, 1.0000000f, 3.0000000f);
+	AddOres(Block::BlockType::Diamond, blocksInGrid, 0.0100000f);*/
+	//Ores
+	//Underground filling
 }
 //WORLD GENERATION
 
@@ -288,23 +289,27 @@ void Grid::World::Update(float dt)
 	}
 }
 
-void Grid::World::AddOres(Block::BlockType type, std::vector<Block>& b, float chanceOfSpawningOnEachBlock)
+void Grid::World::AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningOnEachBlock)
 {
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> randomNumber(0.0000000f, 100.0000000f);
 
 	//Create the ores
-	for (unsigned int i = 0; i < b.size(); i++)
+	int id = 0;
+	for (int i = 0; i < Grid::Width; i++)
 	{
-		if ((b.at(i).GetType() == Block::BlockType::Stone) && 
-			(randomNumber(rng) < chanceOfSpawningOnEachBlock))
+		for (int j = 0; j < Grid::Height; j++, id++)
 		{
-			b.at(i).SetType(type);
+			if ((blocks[id].GetType() == Block::BlockType::Stone) &&
+				(randomNumber(rng) < chanceOfSpawningOnEachBlock))
+			{
+				blocks[id].SetType(type);
+			}
 		}
 	}
 }
 
-void Grid::World::AddOres(Block::BlockType type, std::vector<Block>& b, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar)
+void Grid::World::AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar)
 {
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> randomNumber(0.0000000f, 100.0000000f);
@@ -313,12 +318,19 @@ void Grid::World::AddOres(Block::BlockType type, std::vector<Block>& b, float ch
 	std::vector<Block> Branch;
 
 	//Creating the SpawnerOreCentre
-	for (unsigned int i = 0; i < b.size(); i++)
 	{
-		if (randomNumber(rng) < chanceOfSpawningCentre && b.at(i).GetType() == Block::BlockType::Stone)
+		int id = 0;
+		for (int i = 0; i < Grid::Width; i++)
 		{
-			SpawnerOreCentre.push_back(b.at(i));
-			b.at(i).SetType(type);
+			for (int j = 0; j < Grid::Height; j++, id++)
+			{
+				if ((blocks[id].GetType() == Block::BlockType::Stone) &&
+					(randomNumber(rng) < chanceOfSpawningCentre))
+				{
+					SpawnerOreCentre.push_back(blocks[id]);
+					blocks[id].SetType(type);
+				}
+			}
 		}
 	}
 
@@ -331,33 +343,30 @@ void Grid::World::AddOres(Block::BlockType type, std::vector<Block>& b, float ch
 
 		for (unsigned int branchIterator = 0; branchIterator < Branch.size() && chanceOfChunk > minChance; branchIterator++)
 		{
-			for (unsigned int blockTesting = 0; blockTesting < b.size(); blockTesting++)
-			{
 				//TOP TESTING
-				if (b.at(blockTesting).GetLocation() == Branch.at(branchIterator).GetLocation() + Vec2(0, -1) && b.at(blockTesting).GetType() == Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
+				if (blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))].GetType() == World::Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
 				{
-						Branch.push_back(b.at(blockTesting));
-						b.at(blockTesting).SetType(type);
+						Branch.push_back(blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))]);
+						blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))].SetType(type);
 				}
 				//RIGHT TESTING
-				if (b.at(blockTesting).GetLocation() == Branch.at(branchIterator).GetLocation() + Vec2(1, 0) && b.at(blockTesting).GetType() == Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
+				if (blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(1, 0))].GetType() == World::Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
 				{
-					Branch.push_back(b.at(blockTesting));
-					b.at(blockTesting).SetType(type);
+					Branch.push_back(blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))]);
+					blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))].SetType(type);
 				}
 				//BOTTOM TESTING
-				if (b.at(blockTesting).GetLocation() == Branch.at(branchIterator).GetLocation() + Vec2(0, 1) && b.at(blockTesting).GetType() == Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
+				if (blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, 1))].GetType() == World::Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
 				{
-					Branch.push_back(b.at(blockTesting));
-					b.at(blockTesting).SetType(type);
+					Branch.push_back(blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))]);
+					blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))].SetType(type);
 				}
 				//LEFT TESTING
-				if (b.at(blockTesting).GetLocation() == Branch.at(branchIterator).GetLocation() + Vec2(-1, 0) && b.at(blockTesting).GetType() == Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
+				if (blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(-1, 0))].GetType() == World::Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
 				{
-					Branch.push_back(b.at(blockTesting));
-					b.at(blockTesting).SetType(type);
+					Branch.push_back(blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))]);
+					blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))].SetType(type);
 				}
-			}
 
 			chanceOfChunk /= chanceScalar;
 		}
@@ -504,6 +513,11 @@ void Grid::World::MobSpawning(Mob::MobType type, std::vector<Mob>& m, int propab
 int Grid::World::GetId(int _x, int _y)
 {
 	return _x * Grid::Height + _y;
+}
+
+int Grid::World::GetId(Vec2 & v)
+{
+	return v.x * Grid::Height + v.y;
 }
 
 void Grid::World::Player::ClampToScreen()
