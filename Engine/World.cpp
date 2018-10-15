@@ -103,10 +103,9 @@ Grid::World::World()
 	}
 
 	//Ores
-	AddOres(Block::BlockType::Coal, blocksInGrid, 1.3333333f, 80.0000000f, 2.0000000f, 1.1000000f);
-	/*AddOres(Block::BlockType::Coal, blocksInGrid, 1.3333333f, 80.0000000f, 2.0000000f, 1.5000000f);*/
-	/*AddOres(Block::BlockType::Iron, blocksInGrid, 1.3333333f, 90.0000000f, 1.0000000f, 3.0000000f);
-	AddOres(Block::BlockType::Diamond, blocksInGrid, 0.0100000f);*/
+	AddOres(Block::BlockType::Coal, blocksInGrid, 0.3333333f, 80.0000000f, 2.0000000f, 1.0800000f);
+	AddOres(Block::BlockType::Iron, blocksInGrid, 0.3333333f, 90.0000000f, 1.0000000f, 1.3333333f);
+	AddOres(Block::BlockType::Diamond, blocksInGrid, 0.0100000f);
 	//Ores
 	//Underground filling
 }
@@ -352,20 +351,20 @@ void Grid::World::AddOres(Block::BlockType type, World::Block* blocks, float cha
 				//RIGHT TESTING
 				if (blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(1, 0))].GetType() == World::Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
 				{
-					Branch.push_back(blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))]);
-					blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))].SetType(type);
+					Branch.push_back(blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(1, 0))]);
+					blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(1, 0))].SetType(type);
 				}
 				//BOTTOM TESTING
 				if (blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, 1))].GetType() == World::Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
 				{
-					Branch.push_back(blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))]);
-					blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))].SetType(type);
+					Branch.push_back(blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, 1))]);
+					blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, 1))].SetType(type);
 				}
 				//LEFT TESTING
 				if (blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(-1, 0))].GetType() == World::Block::BlockType::Stone && randomNumber(rng) < chanceOfChunk)
 				{
-					Branch.push_back(blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))]);
-					blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(0, -1))].SetType(type);
+					Branch.push_back(blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(-1, 0))]);
+					blocks[GetId(Branch.at(branchIterator).GetLocation() + Vec2(-1, 0))].SetType(type);
 				}
 
 			chanceOfChunk /= chanceScalar;
@@ -517,7 +516,7 @@ int Grid::World::GetId(int _x, int _y)
 
 int Grid::World::GetId(Vec2 & v)
 {
-	return v.x * Grid::Height + v.y;
+	return int(v.x) * Grid::Height + int(v.y);
 }
 
 void Grid::World::Player::ClampToScreen()

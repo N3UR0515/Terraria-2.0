@@ -4,3 +4,4 @@ PANA AICI... dupa ce termini alea usoare fa astea:
 14. Adaug sprituri
 15. Adauga inventar
 16. Updatez algorithmul de world generation sa faca si structuri subterane ca cele din terraria sau minecraft poate
+17. Adauga sunet la joc

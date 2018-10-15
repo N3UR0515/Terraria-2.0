@@ -132,6 +132,7 @@ public:
 	};
 	//World class
 
+	World::Player player;
 	World world;
 public:
 	static constexpr int CellDimensions = 8; //16
