@@ -46,7 +46,7 @@ void Game::UpdateModel()
 	//World
 
 	//Player
-	//grd.player.Update(wnd.kbd, wnd.mouse, grd.world.blocks);
+	grd.player.Update(grd.world, wnd.kbd, wnd.mouse);
 	//Player
 }
 
@@ -60,6 +60,6 @@ void Game::ComposeFrame()
 	//World
 
 	//Player
-	//player.Draw(grd);
+	grd.player.Draw(grd);
 	//Player
 }

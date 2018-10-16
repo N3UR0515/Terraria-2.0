@@ -376,7 +376,8 @@ void Grid::World::AddOres(Block::BlockType type, World::Block* blocks, float cha
 
 Grid::Grid(Graphics & gfx)
 	:
-	gfx(gfx)
+	gfx(gfx),
+	player(Vec2(float(Grid::Width / 2), float(0)))
 {
 }
 
@@ -539,22 +540,19 @@ void Grid::World::Player::ClampToScreen()
 	}
 }
 
-void Grid::World::Player::PlayerWithBlocksCollision(Vec2& dl, std::vector<Grid::World::Block>& b)
+void Grid::World::Player::PlayerWithBlocksCollision(Vec2& dl, Block* blocks)
 {
 	//Checking if there is a block on the player's right/left/down/up/diagonals and respond by changing the delta_loc
 	if ((dl.x != 0 && dl.y == 0) || (dl.x == 0 && dl.y != 0) || (dl.x != 0 && dl.y != 0))
 	{
-		for (unsigned int i = 0; i < b.size(); i++)
+		if (blocks[Grid::World::GetId(int(loc.x + dl.x), int(loc.y + dl.y))].GetType() != Block::BlockType::Air)
 		{
-			if (b.at(i).GetLocation() == loc + dl)
-			{
-				dl = { 0,0 };
-			}
+			dl = { 0,0 };
 		}
 	}
 }
 
-void Grid::World::Player::Jump(Keyboard & kbd, Vec2 & dl, std::vector<Grid::World::Block>& b)
+void Grid::World::Player::Jump(Keyboard & kbd, Vec2 & dl, Block* blocks)
 {
 	//Jumping Algorithm
 	if (kbd.KeyIsPressed(VK_UP))
@@ -575,14 +573,10 @@ void Grid::World::Player::Jump(Keyboard & kbd, Vec2 & dl, std::vector<Grid::Worl
 		{
 			//Check if it can jump
 			Vec2 underBlock = { 0,1 };
-			for (unsigned int i = 0; i < b.size(); i++)
+			if (blocks[Grid::World::GetId(loc + underBlock)].GetType() != Block::BlockType::Air)
 			{
-				if (b.at(i).GetLocation() == loc + underBlock)
-				{
-					jumping = true;
-					jumpForce = 3; //If you change the jumpForce then you must change this too!
-					break;
-				}
+				jumping = true;
+				jumpForce = 3; //If you change the jumpForce then you must change this too!
 			}
 		}
 	}
@@ -598,14 +592,11 @@ void Grid::World::Player::Jump(Keyboard & kbd, Vec2 & dl, std::vector<Grid::Worl
 		dl += {0, 1};
 
 		Vec2 underBlock = { 0,1 };
-		for (unsigned int i = 0; i < b.size(); i++)
+		if (blocks[Grid::World::GetId(loc + underBlock)].GetType() != Block::BlockType::Air)
 		{
-			if (b.at(i).GetLocation() == loc + underBlock)
-			{
-				dl += {0, -1}; //Reset dl;
-				jumping = false;
-				jumpForce = 0;
-			}
+			dl += {0, -1}; //Reset dl;
+			jumping = false;
+			jumpForce = 0;
 		}
 	}
 	//Gravity
@@ -621,7 +612,7 @@ void Grid::World::Player::MoveBy(const Vec2 delta_loc)
 	loc += delta_loc;
 }
 
-void Grid::World::Player::BlockBreaking(Vec2& mousePos, std::vector<Grid::World::Block>& b)
+void Grid::World::Player::BlockBreaking(Vec2& mousePos, Block* blocks)
 {
 	Vec2 gridPos = mousePos / Grid::CellDimensions;
 
@@ -632,17 +623,31 @@ void Grid::World::Player::BlockBreaking(Vec2& mousePos, std::vector<Grid::World:
 
 	Vec2 distanceBetweenMouseBreakingAndPlayer = gridPos - loc;
 
-	if (distanceBetweenMouseBreakingAndPlayer.GetLength() > float(playerBreakingReach))
+	if (distanceBetweenMouseBreakingAndPlayer.GetLength() < float(playerBreakingReach))
 	{
-	}
-	else
-	{
-		for (unsigned int i = 0; i < b.size(); i++)
+		if (blocks[Grid::World::GetId(gridPos)].GetType() != Block::BlockType::Air)
 		{
-			if (b.at(i).GetLocation() == gridPos)
-			{
-				b.erase(b.begin() + i);
-			}
+			blocks[Grid::World::GetId(gridPos)].SetType(Block::BlockType::Air);
+		}
+	}
+}
+
+void Grid::World::Player::BlockPlacing(Vec2 & mousePos, Block * blocks)
+{
+	Vec2 gridPos = mousePos / Grid::CellDimensions;
+
+	gridPos.x = float(int(gridPos.x));
+	gridPos.y = float(int(gridPos.y));
+
+	assert(gridPos.x >= 0 && gridPos.x < Grid::Width && gridPos.y >= 0 && gridPos.y < Grid::Height);
+
+	Vec2 distanceBetweenMouseBreakingAndPlayer = gridPos - loc;
+
+	if (distanceBetweenMouseBreakingAndPlayer.GetLength() < float(playerBreakingReach))
+	{
+		if (blocks[Grid::World::GetId(gridPos)].GetType() == Block::BlockType::Air)
+		{
+			blocks[Grid::World::GetId(gridPos)].SetType(Block::BlockType::Grass);
 		}
 	}
 }
@@ -652,7 +657,7 @@ void Grid::World::Player::Draw(Grid & grd) const
 	grd.DrawCell(loc, c);
 }
 
-void Grid::World::Player::Update(Keyboard& kbd, Mouse& mouse, std::vector<Grid::World::Block>& b)
+void Grid::World::Player::Update(World& wrd, Keyboard& kbd, Mouse& mouse)
 {
 	Vec2 delta_loc = { 0,0 };
 
@@ -667,18 +672,19 @@ void Grid::World::Player::Update(Keyboard& kbd, Mouse& mouse, std::vector<Grid::
 	}
 	//Horizontal movement
 
-	//Block Breaking
+	//Block Breaking and Placing
 	if (mouse.LeftIsPressed())
 	{
-		BlockBreaking(Vec2(float(mouse.GetPosX()), float(mouse.GetPosY())), b);
+		BlockBreaking(Vec2(float(mouse.GetPosX()), float(mouse.GetPosY())), wrd.blocksInGrid);
+		BlockPlacing(Vec2(float(mouse.GetPosX()), float(mouse.GetPosY())), wrd.blocksInGrid);
 	}
 
 	if (moveCounter++ == movePeriod)
 	{
 		moveCounter = 0; //Reset moveCounter
 
-		Jump(kbd, delta_loc, b);
-		PlayerWithBlocksCollision(delta_loc, b);
+		Jump(kbd, delta_loc, wrd.blocksInGrid);
+		PlayerWithBlocksCollision(delta_loc, wrd.blocksInGrid);
 		MoveBy(delta_loc);
 		ClampToScreen();
 	}

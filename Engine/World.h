@@ -59,14 +59,15 @@ public:
 		{
 		private:
 			void ClampToScreen();
-			void PlayerWithBlocksCollision(Vec2& dl, std::vector<Grid::Grid::World::Block>& b);
-			void Jump(Keyboard& kbd, Vec2& dl, std::vector<Grid::World::Block>& b);
+			void PlayerWithBlocksCollision(Vec2& dl, Block* blocks);
+			void Jump(Keyboard& kbd, Vec2& dl, Block* blocks);
 			void MoveBy(const Vec2 delta_loc);
-			void BlockBreaking(Vec2& mousePos, std::vector<Grid::World::Block>& b);
+			void BlockBreaking(Vec2& mousePos, Block* blocks);
+			void BlockPlacing(Vec2& mousePos, Block* blocks);
 		public:
 			Player(const Vec2 in_loc);
 			void Draw(Grid& grd) const;
-			void Update(Keyboard& kbd, Mouse& mouse, std::vector<Grid::World::Block>& b);
+			void Update(World& wrd, Keyboard& kbd, Mouse& mouse);
 		private:
 			Vec2 loc;
 			Color c = Colors::Magenta;
@@ -74,7 +75,7 @@ public:
 			int moveCounter = 0;
 			bool jumping = false;
 			int jumpForce = 3; //Number of blocks the player can jump
-			static constexpr _int8 playerBreakingReach = 3;
+			static constexpr char playerBreakingReach = 3;
 		};
 		////Player class
 
@@ -114,8 +115,8 @@ public:
 		void AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningOnEachBlock);
 		void AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar);
 		void MobSpawning(Mob::MobType type, std::vector<Mob>& m, int propabillity);
-		int GetId(int _x, int _y);
-		int GetId(Vec2& v);
+		static int GetId(int _x, int _y);
+		static int GetId(Vec2& v);
 		//Functions
 	public:
 		//Data
