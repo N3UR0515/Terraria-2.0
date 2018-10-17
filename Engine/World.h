@@ -112,8 +112,9 @@ public:
 		//Functions
 	private:
 		//Functions
-		void AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningOnEachBlock);
-		void AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar);
+		void AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningOnEachBlock, std::mt19937& rng);
+		void AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar, std::mt19937& rng);
+		Vec2 FindTunnelEntranceOnSurface(int leftExtremity, int rightExtremity, Block* blocks, std::mt19937& rng);
 		void MobSpawning(Mob::MobType type, std::vector<Mob>& m, int propabillity);
 		static int GetId(int _x, int _y);
 		static int GetId(Vec2& v);

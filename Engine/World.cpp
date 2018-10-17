@@ -52,24 +52,27 @@ Grid::World::World()
 	}
 
 	std::mt19937 rng(std::random_device{}());
-	std::uniform_real_distribution<float> seeding(0, 100000.0f); //You can change 100000 with any number you want
-																 //But if it's a small number there are big chances that there
-																 //Might be similarities with previous or next maps
-																 //So with a big number, this chance gets smaller
 
 	//Surface generation
-	float seed = seeding(rng); //Taking a random seed/xoffset in time;
-
-	for (int i = 0; i < Grid::Width; i++, seed += 0.0800000f) //If you change 0.2f with bigger numbers, it will get suddenly random
 	{
-		float j = Noise::PerlinNoise_1D(seed, 2.7182818f, 6.2831853f); //Taking a random noise value based on the seed
-														//With a frequency of 3.5f, that's what I thought would be the best one
-														//And with a amplitude of 3, you can change the freq and the ampl if u want
+		std::uniform_real_distribution<float> seeding(0, 100000.0f); //You can change 100000 with any number you want
+																	 //But if it's a small number there are big chances that there
+																	 //Might be similarities with previous or next maps
+																	 //So with a big number, this chance gets smaller
 
-		j += float(Grid::Height / 2 - 1);				//The perlin values are between 0 and double the amplitude
-															//So I just translate it to the middle of the y plane
+		float seed = seeding(rng); //Taking a random seed/xoffset in time;
 
-		blocksInGrid[GetId(i, int(j + 0.5f))].SetType(Block::BlockType::Grass);
+		for (int i = 0; i < Grid::Width; i++, seed += 0.0800000f) //If you change 0.2f with bigger numbers, it will get suddenly random
+		{
+			float j = Noise::PerlinNoise_1D(seed, 2.7182818f, 6.2831853f); //Taking a random noise value based on the seed
+															//With a frequency of 3.5f, that's what I thought would be the best one
+															//And with a amplitude of 3, you can change the freq and the ampl if u want
+
+			j += float(Grid::Height / 2 - 1);				//The perlin values are between 0 and double the amplitude
+																//So I just translate it to the middle of the y plane
+
+			blocksInGrid[GetId(i, int(j + 0.5f))].SetType(Block::BlockType::Grass);
+		}
 	}
 	//Surface generation
 
@@ -101,13 +104,63 @@ Grid::World::World()
 			}
 		}
 	}
+	//Underground filling
+
+	//Hole caves generating
+	{
+		std::uniform_int_distribution<int> Dist(1, 3);
+		std::uniform_int_distribution<int> TunnelVertex(2, 4);
+		std::vector<Vec2> tunnelEntrances;
+		std::vector<Vec2> tunnelVertexes;
+
+		const char nTunnels = Dist(rng);
+
+		//Getting the tunnel's entrances
+		for (char i = 0; i < nTunnels; i++)
+		{
+			tunnelEntrances.push_back(FindTunnelEntranceOnSurface(0, Grid::Width, blocksInGrid, rng));
+		}
+
+		//Tunnel creation
+		for (char TunnelIterator = 0; TunnelIterator < nTunnels; TunnelIterator++)
+		{
+			const int TunnelLeftExtremity = tunnelEntrances.at(TunnelIterator).x - 5;
+			const int TunnelRightExtremity = tunnelEntrances.at(TunnelIterator).x + 5;
+
+			std::uniform_int_distribution<int> TunnelVertexLocation(TunnelLeftExtremity, TunnelRightExtremity);
+
+			//Setting the vertexes positions
+			for (char TunnelVertexesIterator = 0; TunnelVertexesIterator < TunnelVertex(rng); TunnelVertexesIterator++)
+			{
+				if (TunnelVertexesIterator == 0)
+				{
+					tunnelVertexes.push_back(Vec2(TunnelVertexLocation(rng), tunnelEntrances.at(TunnelIterator).y + 5));
+				}
+				else
+				{
+					tunnelVertexes.push_back(Vec2(TunnelVertexLocation(rng), tunnelVertexes.at(TunnelVertexesIterator - 1).y + 5));
+				}
+			}
+
+			//Aici va trebuii sa fac interpolarea intre tunnelVertexes
+			//  |
+			// \ /
+
+			// / \
+			//  |
+			//Aici va trebuii sa fac interpolarea intre tunnelVertexes
+
+			tunnelVertexes.clear(); //Chestia asta trebuie sa fie ultima chestie din algorithm ca sa poate merge
+		}
+		//Tunnel creation
+	}
+	//Hole caves generating
 
 	//Ores
-	AddOres(Block::BlockType::Coal, blocksInGrid, 0.3333333f, 80.0000000f, 2.0000000f, 1.0800000f);
-	AddOres(Block::BlockType::Iron, blocksInGrid, 0.3333333f, 90.0000000f, 1.0000000f, 1.3333333f);
-	AddOres(Block::BlockType::Diamond, blocksInGrid, 0.0100000f);
+	AddOres(Block::BlockType::Coal, blocksInGrid, 0.3333333f, 80.0000000f, 2.0000000f, 1.0800000f, rng);
+	AddOres(Block::BlockType::Iron, blocksInGrid, 0.3333333f, 90.0000000f, 1.0000000f, 1.3333333f, rng);
+	AddOres(Block::BlockType::Diamond, blocksInGrid, 0.0100000f, rng);
 	//Ores
-	//Underground filling
 }
 //WORLD GENERATION
 
@@ -288,9 +341,8 @@ void Grid::World::Update(float dt)
 	}
 }
 
-void Grid::World::AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningOnEachBlock)
+void Grid::World::AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningOnEachBlock, std::mt19937& rng)
 {
-	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> randomNumber(0.0000000f, 100.0000000f);
 
 	//Create the ores
@@ -308,9 +360,8 @@ void Grid::World::AddOres(Block::BlockType type, World::Block* blocks, float cha
 	}
 }
 
-void Grid::World::AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar)
+void Grid::World::AddOres(Block::BlockType type, World::Block* blocks, float chanceOfSpawningCentre, float chanceOfCluster, float minChance, float chanceScalar, std::mt19937& rng)
 {
-	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> randomNumber(0.0000000f, 100.0000000f);
 
 	std::vector<Block> SpawnerOreCentre;
@@ -372,6 +423,27 @@ void Grid::World::AddOres(Block::BlockType type, World::Block* blocks, float cha
 
 		Branch.clear();
 	}
+}
+
+Vec2 Grid::World::FindTunnelEntranceOnSurface(int leftExtremity, int rightExtremity, Block* blocks, std::mt19937& rng)
+{
+	std::vector<Block> grassBlock;
+
+	//Organizing the possible entrance blocks
+	for (int i = leftExtremity; i < rightExtremity; i++)
+	{
+		for (int j = 0; j < Grid::Height; j++)
+		{
+			if (blocks[GetId(i, j)].GetType() == Block::BlockType::Grass)
+			{
+				grassBlock.push_back(blocks[GetId(i, j)]);
+			}
+		}
+	}
+
+	std::uniform_int_distribution<int> randDist(0, grassBlock.size());
+
+	return grassBlock.at(randDist(rng)).GetLocation();
 }
 
 Grid::Grid(Graphics & gfx)
