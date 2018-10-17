@@ -54,7 +54,7 @@ public:
 		};
 		//Block class
 
-		////Player class
+		//Player class
 		class Player
 		{
 		private:
@@ -77,7 +77,7 @@ public:
 			int jumpForce = 3; //Number of blocks the player can jump
 			static constexpr char playerBreakingReach = 3;
 		};
-		////Player class
+		//Player class
 
 		//Mob class
 		class Mob

@@ -88,7 +88,7 @@ Grid::World::World()
 
 		const int dLayer = dirtLayer(rng);
 
-		//Adding the underground blocks
+		//Adding the stone blocks to fill
 		for (int j = firstDirtBlock; j < Grid::Height; j++)
 		{
 			if (j <= firstDirtBlock + dLayer)
@@ -623,7 +623,7 @@ void Grid::World::Player::BlockBreaking(Vec2& mousePos, Block* blocks)
 
 	Vec2 distanceBetweenMouseBreakingAndPlayer = gridPos - loc;
 
-	if (distanceBetweenMouseBreakingAndPlayer.GetLength() < float(playerBreakingReach))
+	if (distanceBetweenMouseBreakingAndPlayer.GetLength() <= float(playerBreakingReach))
 	{
 		if (blocks[Grid::World::GetId(gridPos)].GetType() != Block::BlockType::Air)
 		{
@@ -643,7 +643,7 @@ void Grid::World::Player::BlockPlacing(Vec2 & mousePos, Block * blocks)
 
 	Vec2 distanceBetweenMouseBreakingAndPlayer = gridPos - loc;
 
-	if (distanceBetweenMouseBreakingAndPlayer.GetLength() < float(playerBreakingReach))
+	if (distanceBetweenMouseBreakingAndPlayer.GetLength() <= float(playerBreakingReach))
 	{
 		if (blocks[Grid::World::GetId(gridPos)].GetType() == Block::BlockType::Air)
 		{
@@ -676,6 +676,9 @@ void Grid::World::Player::Update(World& wrd, Keyboard& kbd, Mouse& mouse)
 	if (mouse.LeftIsPressed())
 	{
 		BlockBreaking(Vec2(float(mouse.GetPosX()), float(mouse.GetPosY())), wrd.blocksInGrid);
+	}
+	if (mouse.RightIsPressed())
+	{
 		BlockPlacing(Vec2(float(mouse.GetPosX()), float(mouse.GetPosY())), wrd.blocksInGrid);
 	}
 
