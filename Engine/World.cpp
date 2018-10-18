@@ -65,8 +65,8 @@ Grid::World::World()
 		for (int i = 0; i < Grid::Width; i++, seed += 0.0800000f) //If you change 0.2f with bigger numbers, it will get suddenly random
 		{
 			float j = Noise::PerlinNoise_1D(seed, 2.7182818f, 6.2831853f); //Taking a random noise value based on the seed
-															//With a frequency of 3.5f, that's what I thought would be the best one
-															//And with a amplitude of 3, you can change the freq and the ampl if u want
+															//With a frequency of e, that's what I thought would be the best one
+															//And with a amplitude of tau, you can change the freq and the ampl if u want
 
 			j += float(Grid::Height / 2 - 1);				//The perlin values are between 0 and double the amplitude
 																//So I just translate it to the middle of the y plane
@@ -108,12 +108,11 @@ Grid::World::World()
 
 	//Hole caves generating
 	{
-		std::uniform_int_distribution<int> Dist(1, 3);
-		std::uniform_int_distribution<int> TunnelVertex(2, 4);
+		std::uniform_int_distribution<int> Distribuitor(1, 3);
+		std::uniform_real_distribution<float> seeding(0, 100000.0f);
 		std::vector<Vec2> tunnelEntrances;
-		std::vector<Vec2> tunnelVertexes;
 
-		const char nTunnels = Dist(rng);
+		const char nTunnels = Distribuitor(rng);
 
 		//Getting the tunnel's entrances
 		for (char i = 0; i < nTunnels; i++)
@@ -124,33 +123,19 @@ Grid::World::World()
 		//Tunnel creation
 		for (char TunnelIterator = 0; TunnelIterator < nTunnels; TunnelIterator++)
 		{
-			const int TunnelLeftExtremity = tunnelEntrances.at(TunnelIterator).x - 5;
-			const int TunnelRightExtremity = tunnelEntrances.at(TunnelIterator).x + 5;
+			const int TunnelLeftExtremity = int(tunnelEntrances.at(TunnelIterator).x) - 5;
+			const int TunnelRightExtremity = int(tunnelEntrances.at(TunnelIterator).x) + 5;
 
-			std::uniform_int_distribution<int> TunnelVertexLocation(TunnelLeftExtremity, TunnelRightExtremity);
+			float seed = seeding(rng);
 
-			//Setting the vertexes positions
-			for (char TunnelVertexesIterator = 0; TunnelVertexesIterator < TunnelVertex(rng); TunnelVertexesIterator++)
+			for (int j = int(tunnelEntrances.at(TunnelIterator).y); j < Grid::Height; j++, seed += 0.0500000f)
 			{
-				if (TunnelVertexesIterator == 0)
-				{
-					tunnelVertexes.push_back(Vec2(TunnelVertexLocation(rng), tunnelEntrances.at(TunnelIterator).y + 5));
-				}
-				else
-				{
-					tunnelVertexes.push_back(Vec2(TunnelVertexLocation(rng), tunnelVertexes.at(TunnelVertexesIterator - 1).y + 5));
-				}
+				float i = Noise::PerlinNoise_1DWithCubic(seed, 3.1000000f, 5.0000000f);
+
+				i += float(TunnelLeftExtremity);
+
+				blocksInGrid[GetId(int(i), j)].SetType(Block::BlockType::Air);
 			}
-
-			//Aici va trebuii sa fac interpolarea intre tunnelVertexes
-			//  |
-			// \ /
-
-			// / \
-			//  |
-			//Aici va trebuii sa fac interpolarea intre tunnelVertexes
-
-			tunnelVertexes.clear(); //Chestia asta trebuie sa fie ultima chestie din algorithm ca sa poate merge
 		}
 		//Tunnel creation
 	}

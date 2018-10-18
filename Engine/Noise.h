@@ -1,5 +1,7 @@
 #pragma once
 
+//http://www.arendpeter.com/Perlin_Noise.html
+
 #include <cmath>
 
 class Noise
@@ -85,10 +87,10 @@ public:
 		int integer_X = int(x);
 		float fractional_X = x - integer_X;
 
-		float v0 = SmoothNoise(integer_X - 1);
-		float v1 = SmoothNoise(integer_X);
-		float v2 = SmoothNoise(integer_X + 1);
-		float v3 = SmoothNoise(integer_X + 1);
+		float v0 = SmoothNoise(float(integer_X - 1));
+		float v1 = SmoothNoise(float(integer_X));
+		float v2 = SmoothNoise(float(integer_X + 1));
+		float v3 = SmoothNoise(float(integer_X + 1));
 
 		return Cubic_Interpolation(v0, v1, v2, v3, fractional_X);
 
