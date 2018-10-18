@@ -108,7 +108,7 @@ Grid::World::World()
 
 	//Hole caves generating
 	{
-		std::uniform_int_distribution<int> Distribuitor(1, 3);
+		std::uniform_int_distribution<int> Distribuitor(3, 5);
 		std::uniform_real_distribution<float> seeding(0, 100000.0f);
 		std::vector<Vec2> tunnelEntrances;
 
@@ -128,9 +128,9 @@ Grid::World::World()
 
 			float seed = seeding(rng);
 
-			for (int j = int(tunnelEntrances.at(TunnelIterator).y); j < Grid::Height; j++, seed += 0.0500000f)
+			for (int j = int(tunnelEntrances.at(TunnelIterator).y); j < Grid::Height; j++, seed += 0.0688888f)
 			{
-				float i = Noise::PerlinNoise_1DWithCubic(seed, 3.1000000f, 5.0000000f);
+				float i = Noise::PerlinNoise_1DWithCubic(seed, 4.1000000f, 5.0000000f);
 
 				i += float(TunnelLeftExtremity);
 
