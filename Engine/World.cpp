@@ -108,7 +108,8 @@ Grid::World::World()
 
 	//Hole caves generating
 	{
-		std::uniform_int_distribution<int> Distribuitor(3, 5);
+		std::uniform_int_distribution<int> Distribuitor(1, 3);
+		std::uniform_int_distribution<int> RandGridX(0, Grid::Width - 1);
 		std::uniform_real_distribution<float> seeding(0, 100000.0f);
 		std::vector<Vec2> tunnelEntrances;
 
@@ -117,7 +118,16 @@ Grid::World::World()
 		//Getting the tunnel's entrances
 		for (char i = 0; i < nTunnels; i++)
 		{
-			tunnelEntrances.push_back(FindTunnelEntranceOnSurface(0, Grid::Width, blocksInGrid, rng));
+			//The boundary that the tunnel entrances can be
+			const int leftExtremity = RandGridX(rng);
+			int rightExtremity = leftExtremity + 40;
+
+			if (rightExtremity >= Grid::Width)
+			{
+				rightExtremity = Grid::Width - 1;
+			}
+
+			tunnelEntrances.push_back(FindTunnelEntranceOnSurface(leftExtremity, rightExtremity, blocksInGrid, rng));
 		}
 
 		//Tunnel creation
@@ -128,13 +138,47 @@ Grid::World::World()
 
 			float seed = seeding(rng);
 
+			std::uniform_int_distribution<int> RandRadius(3, 5);
+
 			for (int j = int(tunnelEntrances.at(TunnelIterator).y); j < Grid::Height; j++, seed += 0.0688888f)
 			{
-				float i = Noise::PerlinNoise_1DWithCubic(seed, 4.1000000f, 5.0000000f);
+				float I = Noise::PerlinNoise_1DWithCubic(seed, 4.1000000f, 5.0000000f);
 
-				i += float(TunnelLeftExtremity);
+				I += float(TunnelLeftExtremity);
+				int i = int(I);
 
-				blocksInGrid[GetId(int(i), j)].SetType(Block::BlockType::Air);
+				//Circle formation to wide the holes
+				const int radius = RandRadius(rng);
+				const int topLeftX = i - radius;
+				const int topLeftY = j - radius;
+				const int diameter = (radius * 2) + 1;
+				int bottom = topLeftY + diameter;
+				int right = topLeftX + diameter;
+
+				//Not to exit the screen
+				if (bottom >= Grid::Height)
+				{
+					bottom = Grid::Height;
+				}
+				if (right >= Grid::Width)
+				{
+					right = Grid::Width;
+				}
+
+				//Changing every block in the circle's radius to air
+				for (int y = topLeftY; y < bottom; ++y)
+				{
+					for (int x = topLeftX; x < right; ++x)
+					{
+						const float DistanceSquared = (pow(i - x, 2) + pow(j - y, 2));
+
+						if (DistanceSquared <= float(pow(radius, 2)))
+						{
+							blocksInGrid[GetId(x, y)].SetType(Block::BlockType::Air);
+						}
+					}
+				}
+				//Circle formation to wide the holes
 			}
 		}
 		//Tunnel creation
