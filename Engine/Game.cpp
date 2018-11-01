@@ -48,6 +48,13 @@ void Game::UpdateModel()
 	//Player
 	grd.player.Update(grd.world, wnd.kbd, wnd.mouse);
 	//Player
+
+	//Mobs
+	for (unsigned int i = 0; i < grd.world.mobs.size(); i++)
+	{
+		grd.world.mobs[i].Update(grd);
+	}
+	//Mobs
 }
 
 void Game::ComposeFrame()
@@ -62,4 +69,11 @@ void Game::ComposeFrame()
 	//Player
 	grd.player.Draw(grd);
 	//Player
+
+	//Mobs
+	for (unsigned int i = 0; i < grd.world.mobs.size(); i++)
+	{
+		grd.world.mobs[i].Draw(grd);
+	}
+	//Mobs
 }

@@ -68,6 +68,7 @@ public:
 			Player(const Vec2 in_loc);
 			void Draw(Grid& grd) const;
 			void Update(World& wrd, Keyboard& kbd, Mouse& mouse);
+			Vec2 GetLocation();
 		private:
 			Vec2 loc;
 			Color c = Colors::Magenta;
@@ -93,6 +94,7 @@ public:
 			//Functions
 			Mob(Mob::MobType type, Vec2 loc);
 			void Draw(Grid& grd);
+			void Update(Grid& grd);
 			//Functions
 		private:
 			//Functions

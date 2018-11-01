@@ -107,77 +107,81 @@ Grid::World::World()
 	//Underground filling
 
 	//Hole caves generating
-	std::uniform_int_distribution<int> Distribuitor(1, 3);
-	std::uniform_real_distribution<float> seeding(0, 100000.0f);
-	std::vector<Vec2> tunnelEntrances;
-
-	const char nTunnels = Distribuitor(rng);
-
-	//Getting the tunnel's entrances
-	for (char i = 0; i < nTunnels; i++)
 	{
-		//The boundary that the tunnel entrances can be
-		tunnelEntrances.push_back(FindTunnelEntranceOnSurface(0, Grid::Width, blocksInGrid, rng)); // + 3, because 3 is the smallest possible radius for the circle
-	}
+		std::uniform_int_distribution<int> Distribuitor(1, 3);
+		std::uniform_real_distribution<float> seeding(0, 100000.0f);
+		std::vector<Vec2> tunnelEntrances;
 
-	//Tunnel creation
-	for (char TunnelIterator = 0; TunnelIterator < nTunnels; TunnelIterator++)
-	{
-		const int TunnelLeftExtremity = int(tunnelEntrances.at(TunnelIterator).x) - 5;
-		const int TunnelRightExtremity = int(tunnelEntrances.at(TunnelIterator).x) + 5;
+		const char nTunnels = Distribuitor(rng);
 
-		float seed = seeding(rng);
-
-		std::uniform_int_distribution<int> RandRadius(3, 5);
-
-		for (int j = int(tunnelEntrances.at(TunnelIterator).y); j < Grid::Height; j++, seed += 0.0688888f)
+		//Getting the tunnel's entrances
+		for (char i = 0; i < nTunnels; i++)
 		{
-			float I = Noise::PerlinNoise_1DWithCubic(seed, 4.1000000f, 5.0000000f);
+			//The boundary that the tunnel entrances can be
+			tunnelEntrances.push_back(FindTunnelEntranceOnSurface(0, Grid::Width, blocksInGrid, rng)); // + 3, because 3 is the smallest possible radius for the circle
+		}
 
-			I += float(TunnelLeftExtremity);
-			int i = int(I);
+		//Tunnel creation
+		for (char TunnelIterator = 0; TunnelIterator < nTunnels; TunnelIterator++)
+		{
+			const int TunnelLeftExtremity = int(tunnelEntrances.at(TunnelIterator).x) - 5;
+			const int TunnelRightExtremity = int(tunnelEntrances.at(TunnelIterator).x) + 5;
 
-			//Circle formation to wide the holes
-			const int radius = RandRadius(rng);
-			const int topLeftX = i - radius;
-			const int topLeftY = j - radius;
-			const int diameter = (radius * 2) + 1;
-			int bottom = topLeftY + diameter;
-			int right = topLeftX + diameter;
+			float seed = seeding(rng);
 
-			//Not to exit the screen
-			if (bottom >= Grid::Height)
+			std::uniform_int_distribution<int> RandRadius(3, 5);
+
+			for (int j = int(tunnelEntrances.at(TunnelIterator).y); j < Grid::Height; j++, seed += 0.0688888f)
 			{
-				bottom = Grid::Height;
-			}
-			if (right >= Grid::Width)
-			{
-				right = Grid::Width;
-			}
+				float I = Noise::PerlinNoise_1DWithCubic(seed, 4.1000000f, 5.0000000f);
 
-			//Changing every block in the circle's radius to air
-			for (int y = topLeftY; y < bottom; ++y)
-			{
-				for (int x = topLeftX; x < right; ++x)
+				I += float(TunnelLeftExtremity);
+				int i = int(I);
+
+				//Circle formation to wide the holes
+				const int radius = RandRadius(rng);
+				const int topLeftX = i - radius;
+				const int topLeftY = j - radius;
+				const int diameter = (radius * 2) + 1;
+				int bottom = topLeftY + diameter;
+				int right = topLeftX + diameter;
+
+				//Not to exit the screen
+				if (bottom >= Grid::Height)
 				{
-					const float DistanceSquared = (pow(i - x, 2) + pow(j - y, 2));
+					bottom = Grid::Height;
+				}
+				if (right >= Grid::Width)
+				{
+					right = Grid::Width;
+				}
 
-					if (DistanceSquared <= float(pow(radius, 2)))
+				//Changing every block in the circle's radius to air
+				for (int y = topLeftY; y < bottom; ++y)
+				{
+					for (int x = topLeftX; x < right; ++x)
 					{
-						blocksInGrid[GetId(x, y)].SetType(Block::BlockType::Air);
+						const float DistanceSquared = (pow(i - x, 2) + pow(j - y, 2));
+
+						if (DistanceSquared <= float(pow(radius, 2)))
+						{
+							blocksInGrid[GetId(x, y)].SetType(Block::BlockType::Air);
+						}
 					}
 				}
+				//Circle formation to wide the holes
 			}
-			//Circle formation to wide the holes
 		}
+		//Tunnel creation
 	}
-	//Tunnel creation
 	//Hole caves generating
 
 	//Ores
-	AddOres(Block::BlockType::Coal, blocksInGrid, 0.3333333f, 80.0000000f, 2.0000000f, 1.0800000f, rng);
-	AddOres(Block::BlockType::Iron, blocksInGrid, 0.3333333f, 90.0000000f, 1.0000000f, 1.3333333f, rng);
-	AddOres(Block::BlockType::Diamond, blocksInGrid, 0.0100000f, rng);
+	{
+		AddOres(Block::BlockType::Coal, blocksInGrid, 0.3333333f, 80.0000000f, 2.0000000f, 1.0800000f, rng);
+		AddOres(Block::BlockType::Iron, blocksInGrid, 0.3333333f, 90.0000000f, 1.0000000f, 1.3333333f, rng);
+		AddOres(Block::BlockType::Diamond, blocksInGrid, 0.0100000f, rng);
+	}
 	//Ores
 }
 //WORLD GENERATION
@@ -186,9 +190,8 @@ Grid::World::World()
 void Grid::World::Update(float dt)
 {
 	timeWorld += dt;
-	mobSpawnTime += dt;
 
-	if (timeWorld >= 25.0f) // One day durates 10 minutes, so 10 min * 60 to get 600 seconds and then / 24 (for each phase)
+	if (timeWorld >= 2.0f) // One day durates 10 minutes, so 10 min * 60 to get 600 seconds and then / 24 (for each phase)
 	{
 		//Reset the animation
 		if (backgroundSprite == 24)
@@ -348,13 +351,14 @@ void Grid::World::Update(float dt)
 	}
 
 	//If is night, because night is starts at 20:00 to 4:00
-	if (mobSpawnTime >= 0.3333333f)
+	if ((backgroundSprite >= 20 && backgroundSprite <= 23) || (backgroundSprite >= 0 && backgroundSprite <= 4))
 	{
-		if ((backgroundSprite >= 20 && backgroundSprite <= 23) || (backgroundSprite >= 0 && backgroundSprite <= 4))
+		mobSpawnTime += dt;
+		if (mobSpawnTime >= 0.3333333f)
 		{
-			MobSpawning(World::Mob::MobType::Zombie, mobs, 60);
-			MobSpawning(World::Mob::MobType::Skeleton, mobs, 30);
-			MobSpawning(World::Mob::MobType::Creeper, mobs, 10);
+			MobSpawning(World::Mob::MobType::Zombie, mobs, 20);
+			MobSpawning(World::Mob::MobType::Skeleton, mobs, 5);
+			MobSpawning(World::Mob::MobType::Creeper, mobs, 2);
 		}
 	}
 }
@@ -583,6 +587,38 @@ void Grid::World::Mob::Draw(Grid & grd)
 	grd.DrawCell(loc, type);
 }
 
+void Grid::World::Mob::Update(Grid& grd)
+{
+
+	if (type == Mob::MobType::Zombie)
+	{
+		Vec2 distanceFromMobToPlayer = grd.player.GetLocation() - loc;
+
+		//Finding the best way to get to the player
+		Vec2 up = loc + Vec2{0, -1};
+		Vec2 right = loc + Vec2{ 1, 0 };
+		Vec2 down = loc + Vec2{ 0, 1 };
+		Vec2 left = loc + Vec2{ -1, 0 };
+
+		if (Vec2(grd.player.GetLocation() - up).GetLength() < distanceFromMobToPlayer.GetLength())
+		{
+			loc = up;
+		}
+		if (Vec2(grd.player.GetLocation() - right).GetLength() < distanceFromMobToPlayer.GetLength())
+		{
+			loc = right;
+		}
+		if (Vec2(grd.player.GetLocation() - down).GetLength() < distanceFromMobToPlayer.GetLength())
+		{
+			loc = down;
+		}
+		if (Vec2(grd.player.GetLocation() - left).GetLength() < distanceFromMobToPlayer.GetLength())
+		{
+			loc = left;
+		}
+	}
+}
+
 void Grid::World::Mob::Update(float dt)
 {
 	loc += Vec2(1.0f, 0.0f) * dt;
@@ -593,7 +629,7 @@ void Grid::World::MobSpawning(Mob::MobType type, std::vector<Mob>& m, int propab
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_int_distribution<int> rand(0, 100);
 
-	if (rand(rng) <= propabillity)
+	if (rand(rng) < propabillity)
 	{
 		World::Mob mob = World::Mob(type, Vec2(10.0f, 0.0f));
 		m.push_back(mob);
@@ -781,4 +817,9 @@ void Grid::World::Player::Update(World& wrd, Keyboard& kbd, Mouse& mouse)
 		MoveBy(delta_loc);
 		ClampToScreen();
 	}
+}
+
+Vec2 Grid::World::Player::GetLocation()
+{
+	return loc;
 }
