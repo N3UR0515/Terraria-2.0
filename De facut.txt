@@ -1,6 +1,5 @@
 PANA AICI... dupa ce termini alea usoare fa astea:
 
-14. Adaug caves
 15. Adaug Biomul de corruption
 16. Adaug Biomuri
 17. Ma ocup de mobs, i-am facut deja, dar nu au AI

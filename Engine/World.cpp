@@ -107,82 +107,71 @@ Grid::World::World()
 	//Underground filling
 
 	//Hole caves generating
+	std::uniform_int_distribution<int> Distribuitor(1, 3);
+	std::uniform_real_distribution<float> seeding(0, 100000.0f);
+	std::vector<Vec2> tunnelEntrances;
+
+	const char nTunnels = Distribuitor(rng);
+
+	//Getting the tunnel's entrances
+	for (char i = 0; i < nTunnels; i++)
 	{
-		std::uniform_int_distribution<int> Distribuitor(1, 3);
-		std::uniform_int_distribution<int> RandGridX(0, Grid::Width - 1);
-		std::uniform_real_distribution<float> seeding(0, 100000.0f);
-		std::vector<Vec2> tunnelEntrances;
+		//The boundary that the tunnel entrances can be
+		tunnelEntrances.push_back(FindTunnelEntranceOnSurface(0, Grid::Width, blocksInGrid, rng)); // + 3, because 3 is the smallest possible radius for the circle
+	}
 
-		const char nTunnels = Distribuitor(rng);
+	//Tunnel creation
+	for (char TunnelIterator = 0; TunnelIterator < nTunnels; TunnelIterator++)
+	{
+		const int TunnelLeftExtremity = int(tunnelEntrances.at(TunnelIterator).x) - 5;
+		const int TunnelRightExtremity = int(tunnelEntrances.at(TunnelIterator).x) + 5;
 
-		//Getting the tunnel's entrances
-		for (char i = 0; i < nTunnels; i++)
+		float seed = seeding(rng);
+
+		std::uniform_int_distribution<int> RandRadius(3, 5);
+
+		for (int j = int(tunnelEntrances.at(TunnelIterator).y); j < Grid::Height; j++, seed += 0.0688888f)
 		{
-			//The boundary that the tunnel entrances can be
-			const int leftExtremity = RandGridX(rng);
-			int rightExtremity = leftExtremity + 40;
+			float I = Noise::PerlinNoise_1DWithCubic(seed, 4.1000000f, 5.0000000f);
 
-			if (rightExtremity >= Grid::Width)
+			I += float(TunnelLeftExtremity);
+			int i = int(I);
+
+			//Circle formation to wide the holes
+			const int radius = RandRadius(rng);
+			const int topLeftX = i - radius;
+			const int topLeftY = j - radius;
+			const int diameter = (radius * 2) + 1;
+			int bottom = topLeftY + diameter;
+			int right = topLeftX + diameter;
+
+			//Not to exit the screen
+			if (bottom >= Grid::Height)
 			{
-				rightExtremity = Grid::Width - 1;
+				bottom = Grid::Height;
+			}
+			if (right >= Grid::Width)
+			{
+				right = Grid::Width;
 			}
 
-			tunnelEntrances.push_back(FindTunnelEntranceOnSurface(leftExtremity, rightExtremity, blocksInGrid, rng));
-		}
-
-		//Tunnel creation
-		for (char TunnelIterator = 0; TunnelIterator < nTunnels; TunnelIterator++)
-		{
-			const int TunnelLeftExtremity = int(tunnelEntrances.at(TunnelIterator).x) - 5;
-			const int TunnelRightExtremity = int(tunnelEntrances.at(TunnelIterator).x) + 5;
-
-			float seed = seeding(rng);
-
-			std::uniform_int_distribution<int> RandRadius(3, 5);
-
-			for (int j = int(tunnelEntrances.at(TunnelIterator).y); j < Grid::Height; j++, seed += 0.0688888f)
+			//Changing every block in the circle's radius to air
+			for (int y = topLeftY; y < bottom; ++y)
 			{
-				float I = Noise::PerlinNoise_1DWithCubic(seed, 4.1000000f, 5.0000000f);
-
-				I += float(TunnelLeftExtremity);
-				int i = int(I);
-
-				//Circle formation to wide the holes
-				const int radius = RandRadius(rng);
-				const int topLeftX = i - radius;
-				const int topLeftY = j - radius;
-				const int diameter = (radius * 2) + 1;
-				int bottom = topLeftY + diameter;
-				int right = topLeftX + diameter;
-
-				//Not to exit the screen
-				if (bottom >= Grid::Height)
+				for (int x = topLeftX; x < right; ++x)
 				{
-					bottom = Grid::Height;
-				}
-				if (right >= Grid::Width)
-				{
-					right = Grid::Width;
-				}
+					const float DistanceSquared = (pow(i - x, 2) + pow(j - y, 2));
 
-				//Changing every block in the circle's radius to air
-				for (int y = topLeftY; y < bottom; ++y)
-				{
-					for (int x = topLeftX; x < right; ++x)
+					if (DistanceSquared <= float(pow(radius, 2)))
 					{
-						const float DistanceSquared = (pow(i - x, 2) + pow(j - y, 2));
-
-						if (DistanceSquared <= float(pow(radius, 2)))
-						{
-							blocksInGrid[GetId(x, y)].SetType(Block::BlockType::Air);
-						}
+						blocksInGrid[GetId(x, y)].SetType(Block::BlockType::Air);
 					}
 				}
-				//Circle formation to wide the holes
 			}
+			//Circle formation to wide the holes
 		}
-		//Tunnel creation
 	}
+	//Tunnel creation
 	//Hole caves generating
 
 	//Ores
