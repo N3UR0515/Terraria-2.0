@@ -46,13 +46,13 @@ void Game::UpdateModel()
 	//World
 
 	//Player
-	grd.player.Update(grd.world, wnd.kbd, wnd.mouse);
+	grd.player.Update(grd.world, wnd.kbd, wnd.mouse, DT);
 	//Player
 
 	//Mobs
 	for (unsigned int i = 0; i < grd.world.mobs.size(); i++)
 	{
-		grd.world.mobs[i].Update(grd);
+		grd.world.mobs[i].Update(grd, DT);
 	}
 	//Mobs
 }

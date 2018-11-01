@@ -67,13 +67,12 @@ public:
 		public:
 			Player(const Vec2 in_loc);
 			void Draw(Grid& grd) const;
-			void Update(World& wrd, Keyboard& kbd, Mouse& mouse);
+			void Update(World& wrd, Keyboard& kbd, Mouse& mouse, float dt);
 			Vec2 GetLocation();
 		private:
 			Vec2 loc;
 			Color c = Colors::Magenta;
-			static constexpr int movePeriod = 5;
-			int moveCounter = 0;
+			float moveTimer = 0.0f;
 			bool jumping = false;
 			int jumpForce = 3; //Number of blocks the player can jump
 			static constexpr char playerBreakingReach = 3;
@@ -94,16 +93,16 @@ public:
 			//Functions
 			Mob(Mob::MobType type, Vec2 loc);
 			void Draw(Grid& grd);
-			void Update(Grid& grd);
+			void Update(Grid& grd, float dt);
 			//Functions
 		private:
 			//Functions
-			void Update(float dt);
 			//Functions
 		private:
 			//Data
 			Vec2 loc;
 			MobType type;
+			float moveTimer = 0.0f;
 			//Data
 		};
 		//Mob class

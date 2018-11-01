@@ -587,41 +587,42 @@ void Grid::World::Mob::Draw(Grid & grd)
 	grd.DrawCell(loc, type);
 }
 
-void Grid::World::Mob::Update(Grid& grd)
+void Grid::World::Mob::Update(Grid& grd, float dt)
 {
+	moveTimer += dt;
 
-	if (type == Mob::MobType::Zombie)
+	if (moveTimer >= 0.3333333f)
 	{
-		Vec2 distanceFromMobToPlayer = grd.player.GetLocation() - loc;
+		moveTimer = 0.0f;
 
-		//Finding the best way to get to the player
-		Vec2 up = loc + Vec2{0, -1};
-		Vec2 right = loc + Vec2{ 1, 0 };
-		Vec2 down = loc + Vec2{ 0, 1 };
-		Vec2 left = loc + Vec2{ -1, 0 };
+		if (type == Mob::MobType::Zombie)
+		{
+			Vec2 distanceFromMobToPlayer = grd.player.GetLocation() - loc;
 
-		if (Vec2(grd.player.GetLocation() - up).GetLength() < distanceFromMobToPlayer.GetLength())
-		{
-			loc = up;
-		}
-		if (Vec2(grd.player.GetLocation() - right).GetLength() < distanceFromMobToPlayer.GetLength())
-		{
-			loc = right;
-		}
-		if (Vec2(grd.player.GetLocation() - down).GetLength() < distanceFromMobToPlayer.GetLength())
-		{
-			loc = down;
-		}
-		if (Vec2(grd.player.GetLocation() - left).GetLength() < distanceFromMobToPlayer.GetLength())
-		{
-			loc = left;
+			//Finding the best way to get to the player
+			Vec2 up = loc + Vec2{ 0, -1 };
+			Vec2 right = loc + Vec2{ 1, 0 };
+			Vec2 down = loc + Vec2{ 0, 1 };
+			Vec2 left = loc + Vec2{ -1, 0 };
+
+			if (Vec2(grd.player.GetLocation() - up).GetLength() < distanceFromMobToPlayer.GetLength() && grd.world.blocksInGrid[GetId(up)].GetType() == Block::BlockType::Air)
+			{
+				loc = up;
+			}
+			if (Vec2(grd.player.GetLocation() - right).GetLength() < distanceFromMobToPlayer.GetLength() && grd.world.blocksInGrid[GetId(right)].GetType() == Block::BlockType::Air)
+			{
+				loc = right;
+			}
+			if (Vec2(grd.player.GetLocation() - down).GetLength() < distanceFromMobToPlayer.GetLength() && grd.world.blocksInGrid[GetId(down)].GetType() == Block::BlockType::Air)
+			{
+				loc = down;
+			}
+			if (Vec2(grd.player.GetLocation() - left).GetLength() < distanceFromMobToPlayer.GetLength() && grd.world.blocksInGrid[GetId(left)].GetType() == Block::BlockType::Air)
+			{
+				loc = left;
+			}
 		}
 	}
-}
-
-void Grid::World::Mob::Update(float dt)
-{
-	loc += Vec2(1.0f, 0.0f) * dt;
 }
 
 void Grid::World::MobSpawning(Mob::MobType type, std::vector<Mob>& m, int propabillity)
@@ -783,8 +784,10 @@ void Grid::World::Player::Draw(Grid & grd) const
 	grd.DrawCell(loc, c);
 }
 
-void Grid::World::Player::Update(World& wrd, Keyboard& kbd, Mouse& mouse)
+void Grid::World::Player::Update(World& wrd, Keyboard& kbd, Mouse& mouse, float dt)
 {
+	moveTimer += dt;
+
 	Vec2 delta_loc = { 0,0 };
 
 	//Horizontal movement
@@ -808,9 +811,9 @@ void Grid::World::Player::Update(World& wrd, Keyboard& kbd, Mouse& mouse)
 		BlockPlacing(Vec2(float(mouse.GetPosX()), float(mouse.GetPosY())), wrd.blocksInGrid);
 	}
 
-	if (moveCounter++ == movePeriod)
+	if (moveTimer >= 0.3333333f)
 	{
-		moveCounter = 0; //Reset moveCounter
+		moveTimer = 0.0f; //Reset moveCounter
 
 		Jump(kbd, delta_loc, wrd.blocksInGrid);
 		PlayerWithBlocksCollision(delta_loc, wrd.blocksInGrid);
