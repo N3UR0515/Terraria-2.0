@@ -591,38 +591,128 @@ void Grid::World::Mob::Update(Grid& grd, float dt)
 {
 	moveTimer += dt;
 
+	Vec2 delta_loc = { 0,0 };
+
 	if (moveTimer >= 0.3333333f)
 	{
 		moveTimer = 0.0f;
 
 		if (type == Mob::MobType::Zombie)
 		{
-			Vec2 distanceFromMobToPlayer = grd.player.GetLocation() - loc;
+			//A* Path Finding Algorithm
+			paths = PathFinding(loc, grd.player.GetLocation());
 
-			//Finding the best way to get to the player
-			Vec2 up = loc + Vec2{ 0, -1 };
-			Vec2 right = loc + Vec2{ 1, 0 };
-			Vec2 down = loc + Vec2{ 0, 1 };
-			Vec2 left = loc + Vec2{ -1, 0 };
-
-			if (Vec2(grd.player.GetLocation() - up).GetLength() < distanceFromMobToPlayer.GetLength() && grd.world.blocksInGrid[GetId(up)].GetType() == Block::BlockType::Air)
+			if (lastLocationOfThePlayer == grd.player.GetLocation())
 			{
-				loc = up;
+				delta_loc = Vec2(paths[pathIterator++].loc - loc);
+				loc += delta_loc;
 			}
-			if (Vec2(grd.player.GetLocation() - right).GetLength() < distanceFromMobToPlayer.GetLength() && grd.world.blocksInGrid[GetId(right)].GetType() == Block::BlockType::Air)
+			else
 			{
-				loc = right;
-			}
-			if (Vec2(grd.player.GetLocation() - down).GetLength() < distanceFromMobToPlayer.GetLength() && grd.world.blocksInGrid[GetId(down)].GetType() == Block::BlockType::Air)
-			{
-				loc = down;
-			}
-			if (Vec2(grd.player.GetLocation() - left).GetLength() < distanceFromMobToPlayer.GetLength() && grd.world.blocksInGrid[GetId(left)].GetType() == Block::BlockType::Air)
-			{
-				loc = left;
+				pathIterator = 0;
 			}
 		}
 	}
+}
+
+std::vector<Grid::World::Node> Grid::World::Mob::PathFinding(Vec2 start, Vec2 end)
+{
+	//A* Path Finding Algorithm
+
+	bool stopSearch = false;
+
+	//1
+	std::vector<Node> openList; //To be evaluated nodes
+	//2
+	std::vector<Node> closedList; //Evaluated nodes
+	openList.push_back(Node(start));
+
+	//3
+	while (!openList.empty())
+	{
+		if (!stopSearch)
+		{
+			//a
+			Node q;
+
+			//Finding the node with lowest f value
+			{
+				int lowestFValue = 100000000;
+				for (int i = 0; i < openList.size(); i++)
+				{
+					if (openList[i].f < lowestFValue)
+					{
+						lowestFValue = openList[i].f;
+						q = openList[i];
+					}
+				}
+			}
+
+			//b
+			//Poping q from openList
+			for (int i = 0; i < openList.size(); i++)
+			{
+				if (openList[i].f = q.f)
+				{
+					openList.erase(openList.begin() + i);
+				}
+			}
+
+			//c
+			std::vector<Node> succesors;
+			succesors.push_back(Node(q.loc + Vec2{ 0, -1 }));
+			succesors.push_back(Node(q.loc + Vec2{ 1, -1 }));
+			succesors.push_back(Node(q.loc + Vec2{ 1, 0 }));
+			succesors.push_back(Node(q.loc + Vec2{ 1, 1 }));
+			succesors.push_back(Node(q.loc + Vec2{ 0, 1 }));
+			succesors.push_back(Node(q.loc + Vec2{ -1, 1 }));
+			succesors.push_back(Node(q.loc + Vec2{ -1, 0 }));
+			succesors.push_back(Node(q.loc + Vec2{ -1, -1 }));
+
+			//d
+			for (int i = 0; i < succesors.size(); i++)
+			{
+				//i
+				if (succesors[i].loc == end)
+				{
+					stopSearch = true;
+				}
+
+				succesors[i].g = q.g + Vec2(succesors[i].loc - q.loc).GetLength();
+
+				succesors[i].h = Vec2(end - succesors[i].loc).GetLength();
+
+				succesors[i].f = succesors[i].g + succesors[i].h;
+
+				//ii
+				for (int openListIterator = 0; openListIterator < openList.size(); openListIterator++)
+				{
+					if (succesors[i].loc == openList[openListIterator].loc)
+					{
+						continue;
+					}
+				}
+
+				//iii
+				for (int closedListIterator = 0; closedListIterator < closedList.size(); closedListIterator++)
+				{
+					if (succesors[i].loc == closedList[closedListIterator].loc)
+					{
+						continue;
+					}
+					else
+					{
+						openList.push_back(closedList[closedListIterator]);
+					}
+				}
+			}
+
+			//e
+			closedList.push_back(q);
+		}
+	}
+
+	return openList;
 }
 
 void Grid::World::MobSpawning(Mob::MobType type, std::vector<Mob>& m, int propabillity)
@@ -786,6 +876,13 @@ void Grid::World::Player::Draw(Grid & grd) const
 
 void Grid::World::Player::Update(World& wrd, Keyboard& kbd, Mouse& mouse, float dt)
 {
+	//This is for the zombie pathfinding
+	for (int i = 0; i < wrd.mobs.size(); i++)
+	{
+		wrd.mobs[i].lastLocationOfThePlayer = loc;
+	}
+	//This is for the zombie pathfinding
+
 	moveTimer += dt;
 
 	Vec2 delta_loc = { 0,0 };
@@ -825,4 +922,9 @@ void Grid::World::Player::Update(World& wrd, Keyboard& kbd, Mouse& mouse, float 
 Vec2 Grid::World::Player::GetLocation()
 {
 	return loc;
+}
+
+Grid::World::Node::Node(Vec2 v)
+{
+	loc = v;
 }

@@ -21,6 +21,19 @@ public:
 	class World
 	{
 	public:
+		//This is for the zombie pathfinding
+		class Node
+		{
+		public:
+			Node() = default;
+			Node(Vec2 v);
+			Vec2 loc;
+			char g = 0;
+			char h = 0;
+			char f = 0;
+		};
+		//This is for the zombie pathfinding
+
 		//Block class
 		class Block
 		{
@@ -97,11 +110,18 @@ public:
 			//Functions
 		private:
 			//Functions
+			std::vector<Grid::World::Node> PathFinding(Vec2 start, Vec2 end);
 			//Functions
+		public:
+			//Data
+			Vec2 lastLocationOfThePlayer;
+			//Data
 		private:
 			//Data
 			Vec2 loc;
 			MobType type;
+			std::vector<Grid::World::Node> paths;
+			unsigned int pathIterator = 0;
 			float moveTimer = 0.0f;
 			//Data
 		};
