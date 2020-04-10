@@ -1,0 +1,9 @@
+PANA AICI... dupa ce termini alea usoare fa astea:
+
+15. Ma ocup de mobs, i-am facut deja, dar nu au AI
+16. Adauga sunet la joc
+17. Adauga inventar
+18. Adaug Biomul de corruption
+19. Adaug Biomuri
+20. Updatez algorithmul de world generation sa faca si structuri subterane ca cele din terraria sau minecraft poate
+21. Adaug sprituri

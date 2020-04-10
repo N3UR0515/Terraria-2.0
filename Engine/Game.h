@@ -23,9 +23,8 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Graphics.h"
-#include "Grid.h"
-#include "Player.h"
 #include "World.h"
+#include "FrameTimer.h"
 
 class Game
 {
@@ -46,7 +45,6 @@ private:
 	/********************************/
 	/*  User Variables              */
 	Grid grd;
-	World world;
-	Player player;
+	FrameTimer ft;
 	/********************************/
 };

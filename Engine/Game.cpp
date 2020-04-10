@@ -25,8 +25,7 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
 	gfx( wnd ),
-	grd(gfx),
-	player(Vec2{Grid::Width /2 - 1, 0})
+	grd(gfx)
 {
 }
 
@@ -40,26 +39,41 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
+	const float DT = ft.Mark();;
+
 	//World
+	grd.world.Update(DT);
 	//World
 
 	//Player
-	player.Update(wnd.kbd, world.blocks);
+	grd.player.Update(grd.world, wnd.kbd, wnd.mouse, DT);
 	//Player
+
+	//Mobs
+	for (unsigned int i = 0; i < grd.world.mobs.size(); i++)
+	{
+		grd.world.mobs[i].Update(grd, DT);
+	}
+	//Mobs
 }
 
 void Game::ComposeFrame()
 {
 	//World
-	world.DrawBackground(grd);
-
-	for (unsigned _int16 i = 0; i < world.blocks.size(); i++)
+	for (unsigned int i = 0; i < Grid::Width * Grid::Height; i++)
 	{
-		world.blocks.at(i).Draw(grd);
+		grd.world.blocksInGrid[i].Draw(grd);
 	}
 	//World
 
 	//Player
-	player.Draw(grd);
+	grd.player.Draw(grd);
 	//Player
+
+	//Mobs
+	for (unsigned int i = 0; i < grd.world.mobs.size(); i++)
+	{
+		grd.world.mobs[i].Draw(grd);
+	}
+	//Mobs
 }
